@@ -1,0 +1,7 @@
+app:
+    build: .
+    volumes:
+        - ./test:/app
+    environment:
+        - VIRTUAL_HOST=symfony-php7.docker
+        - VIRTUAL_PORT=80
