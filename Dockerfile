@@ -2,6 +2,17 @@ FROM php:7.1-fpm-alpine
 
 ENV NGINX_VERSION 1.10.2
 
+# install necessary prerequisites
+RUN apk --no-cache add supervisor zlib-dev icu-dev autoconf g++ make
+
+RUN docker-php-ext-install opcache \
+    && docker-php-ext-install pdo_mysql \
+    && docker-php-ext-install intl \
+    && docker-php-ext-install mbstring \
+    && pecl install xdebug \
+    && pecl install apcu-5.1.8 \
+    && docker-php-ext-enable apcu
+
 # install nginx
 RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	&& CONFIG="\
@@ -47,8 +58,8 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 		--with-http_v2_module \
 		--with-ipv6 \
 	" \
-	&& addgroup -S nginx \
-	&& adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
+    && addgroup -S nginx \
+    && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx nginx \
 	&& apk add --no-cache --virtual .build-deps \
 		gcc \
 		libc-dev \
@@ -120,18 +131,6 @@ RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
 	# forward request and error logs to docker log collector
 	&& ln -sf /dev/stdout /var/log/nginx/access.log \
 	&& ln -sf /dev/stderr /var/log/nginx/error.log
-
-
-# install necessary prerequisites
-RUN apk --no-cache add supervisor zlib-dev icu-dev autoconf g++ make
-
-RUN docker-php-ext-install opcache \
-    && docker-php-ext-install pdo_mysql \
-    && docker-php-ext-install intl \
-    && docker-php-ext-install mbstring \
-    && pecl install xdebug \
-    && pecl install apcu-5.1.8 \
-    && docker-php-ext-enable apcu
 
 # install wkhtmltox
 RUN wget -q http://download.gna.org/wkhtmltopdf/0.12/0.12.3/wkhtmltox-0.12.3_linux-generic-amd64.tar.xz \
