@@ -143,7 +143,12 @@ RUN apk add --no-cache freetype-dev libjpeg-turbo-dev libpng-dev \
     && docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
     && docker-php-ext-install gd exif
 
+# install git and composer
+RUN apk add --no-cache git \
+    && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
 # copy configuration files
+COPY entrypoint.sh /entrypoint.sh
 COPY php.ini /usr/local/etc/php/php.ini
 COPY supervisord.conf /etc/supervisord.conf
 COPY nginx.conf /etc/nginx/nginx.conf
@@ -152,5 +157,7 @@ COPY default.conf /etc/nginx/conf.d/default.conf
 WORKDIR /app
 
 EXPOSE 80 443 9000
+
+ENTRYPOINT ["/entrypoint.sh"]
 
 CMD ["/usr/bin/supervisord", "--nodaemon", "--configuration", "/etc/supervisord.conf"]
